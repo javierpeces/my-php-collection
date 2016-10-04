@@ -13,28 +13,28 @@
 
 //
 // diegracefully( )
-// muere con estilo 
-// la funcion die() de php siempre devuelve cero
+// die with style   
+// the php fn die() is not always returning zero
 //
 /**
- * @param  rc  	  codigo para la salida exit()
- * @param  rv  	  mensaje para mostrar antes de terminar
- * @param  ro  	  recurso afectado
+ * @param  rc  	  code for exit()
+ * @param  rv  	  message to be shown before terminating
+ * @param  ro  	  affected resource
  * @return        rc
  */
 
 function diegracefully( $rc, $rv, $ro )
 {
-	echo MYSELF . ": ERROR '{$rv}' en '${ro}'.\n";
+	echo MYSELF . ": ERROR '{$rv}' in '${ro}'.\n";
 	exit( $rc );
 }
 
 //
 // safedeltree( )
-// borra un directorio (esperemos que) temporal
+// delete a (hopefully) temporary directory
 //
 /**
- * @param  dir    la victima
+ * @param  dir    the victim
  */
 
 function safedeltree( $dir ) 
@@ -43,7 +43,7 @@ function safedeltree( $dir )
 
 	if( $dir == "" )
 	{
-		diegracefully( 2, "interno", "safedeltree" );
+		diegracefully( 2, "internal", "safedeltree" );
 	}
 
 	$files = array_diff( scandir( $dir ), array( '.', '..' ) ); 
@@ -59,11 +59,11 @@ function safedeltree( $dir )
 
 //
 // getwebcontents( )
-// obtiene el contenido de una pagina web en un array
+// gets the content of a web page in an array
 //
 /**
- * @param  input  URL de la pagina a descargar
- * @return        FALSE o texto de la pagina descargada
+ * @param  input  URL of the page to be downloaded
+ * @return        FALSE or page text
  */
 
 function getwebcontents( $input )
@@ -88,13 +88,13 @@ function getwebcontents( $input )
 
 //
 // getftpfile( )
-// descarga un fichero por ftp
+// download a file using ftp
 //
 /**
- * @param  server   direccion del servidor
- * @param  infile   nombre del fichero en el servidor
- * @param  outfile  nombre que se asigna al fichero descargado
- * @return          TRUE o mensaje de error
+ * @param  server   server address
+ * @param  infile   filename in server
+ * @param  outfile  assigned local filename
+ * @return          TRUE or error message
  */
 
 function getftpfile( $server, $infile, $outfile )
@@ -122,14 +122,14 @@ function getftpfile( $server, $infile, $outfile )
 
 //
 // unpacklibrary( )
-// descomprime un tar.gz
-// Se usa xxxx.tar.gz sin version, y no xxxx-1.2.3.tar.gz
-// porque 'Phar' no se lleva bien con el exceso de puntos
+// uncompress a tar.gz
+// uses xxxx.tar.gz without version, not xxxx-1.2.3.tar.gz
+// because 'Phar' works less than well with excess of dots
 //
 /**
- * @param  infile   nombre del fichero tar.gz
- * @param  outdest  directorio en el que se descomprime
- * @return          TRUE o mensaje de error
+ * @param  infile   name of the tar.gz file
+ * @param  outdest  target directory for decompression
+ * @return          TRUE or error message
  */
 
 function unpacklibrary( $infile, $outdest )
@@ -138,13 +138,13 @@ function unpacklibrary( $infile, $outdest )
 
 	if( file_exists( $temp ) )
 	{
-		echo MYSELF . ": eliminando {$temp} existente.\n";
+		echo MYSELF . ": deleting existent {$temp}.\n";
 		unlink( $temp );
 	}
 
 	if( is_dir( $outdest ) )
 	{
-		echo MYSELF . ": eliminando {$outdest} existente.\n";
+		echo MYSELF . ": deleting existent {$outdest}.\n";
 		safedeltree( $outdest );
 	}
 
@@ -167,21 +167,21 @@ function unpacklibrary( $infile, $outdest )
 
 //
 // runshellcmd( )
-// ejecuta una orden en una shell,
-// guarda el log y el retorno $? de la orden
+// run command in a shell,
+// store log file and return code $? of execution
 //
 /**
- * @param  shellcmd orden a ejecutar
- * @param  workdir  directorio en el que se ejecuta
- * @param  lofgfile nombre del fichero en el que se deja el log
- * @return          retorno de la orden ejecutada
+ * @param  shellcmd command to be executed
+ * @param  workdir  working directory during execution
+ * @param  lofgfile execution log filename
+ * @return          command execution return code
  */
 
 function runshellcmd( $shellcmd, $workdir, $logfile )
 {
 	$data = shell_exec( "cd {$workdir} && {$shellcmd} 2>&1; echo \"\$?\"" );
 	file_put_contents( $logfile, $data, LOCK_EX ) 
-		or diegracefully( 1, "escribiendo en el log", $logfile );
+		or diegracefully( 1, "writing log", $logfile );
 
 	$lines = preg_split( "/\n/", $data, -1, PREG_SPLIT_NO_EMPTY );
 	return( $lines[ count( $lines ) - 1 ] );
@@ -196,13 +196,13 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	define( 'MYSELF', $myself );
 	define( 'MYDEBUG', TRUE );
 	$dtinit = date( "r" );
-	echo "{$myself}: iniciando {$dtinit}.\n";
+	echo "{$myself}: starting {$dtinit}.\n";
 
 //
 // Variables: 
-// Localizacion de apache httpd accesible por ftp
-// Directorio de trabajo para compilar httpd
-// Ficheros de log
+// Apache httpd location (accesible by ftp)
+// Working directory for httpd compilation
+// Log files
 //
 
 	$htserver = "ftp.cixug.es";
@@ -214,29 +214,29 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$htinstlog = "httpd-makeinst.log.txt";
 
 //
-// Obtener el numero de version actual de httpd
+// Obtain httpd version number
 //
 
-	echo "{$myself}: obteniendo version de httpd.\n";
+	echo "{$myself}: obtaining httpd version.\n";
 
 	$source  = "ftp://{$htserver}/{$htpath}/";
 	$version = implode( "\n", preg_replace( "/CURRENT-IS-/", "", 
 		preg_grep( "/CURRENT-IS-*/", 
 		preg_split( "/[\s,]+/", 
 		getwebcontents( $source ), -1, PREG_SPLIT_NO_EMPTY ) ) ) )
-		or diegracefully( 1, "no se puede obtener el numero de version", "httpd" );
+		or diegracefully( 1, "cannot obtain version number", "httpd" );
 
 //
-// Descargar el tar.gz de httpd
+// Download httpd tar.gz unless already exists
 //
 
-	echo "{$myself}: descargando tar.gz de la version '{$version}' de httpd.\n";
+	echo "{$myself}: downloading tar.gz version '{$version}' of httpd.\n";
 
 	$htremote = "httpd-{$version}.tar.gz";
 
 	if( MYDEBUG && file_exists( $htlocal ) )
 	{
-		echo "* DEBUG: Ya existe el tar.gz de la version '{$version}' de httpd.\n";
+		echo "* DEBUG: A tar.gz of httpd version '{$version}' already exists.\n";
 		$retval = TRUE;
 	}
 	else
@@ -245,32 +245,32 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	}
 
 	if( $retval != TRUE )
-		diegracefully( $retval, "error en la descarga", $htremote );
+		diegracefully( $retval, "download error", $htremote );
 
 //
-// Comparar la suma MD5 del fichero descargado con la publicada en apache.org
+// Compare MD5 sum of downloaded file to the one published en apache.org
 //
 
-	echo "{$myself}: comprobando la descarga.\n";
+	echo "{$myself}: checking download sum.\n";
 
 	$md5file   = "http://www.apache.org/dist/httpd/httpd-{$version}.tar.gz.md5";
 	$md5data   = getwebcontents( $md5file );
 	$md5remote = substr( $md5data, 0, strpos( $md5data, " " ) );
 	$md5local  = md5_file( $htlocal );
 
-	echo "{$myself}: httpd, suma remota '{$md5remote}', suma local '{$md5local}'.\n";
+	echo "{$myself}: httpd, remote sum '{$md5remote}', local sum '{$md5local}'.\n";
 
 	if( $md5local != $md5remote )
-		diegracefully( 1, "sumas de verificacion de httpd", "md5sum" );
+		diegracefully( 1, "httpd verification sums", "md5sum" );
 
 //
-// Extraer el contenido del tar.gz
+// Extract tar.gz contents
 //
 
-	echo "{$myself}: descomprimiendo {$htlocal} en {$htdest}.\n";
+	echo "{$myself}: uncompressing {$htlocal} in {$htdest}.\n";
 
 	if( ! unpacklibrary( $htlocal, $htdest ) )
-		diegracefully( 1, "descompresion", $htlocal );
+		diegracefully( 1, "uncompression", $htlocal );
 
 //
 // Configure
@@ -283,7 +283,7 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $htcmd, $where, $htconflog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "configure. Vea el contenido del log", $htconflog );
+		diegracefully( $rv, "configure. See log contents", $htconflog );
 
 //
 // Make
@@ -295,7 +295,7 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $htcmd, $where, $htmakelog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "make. Vea el contenido del log", $htmakelog );
+		diegracefully( $rv, "make. See log contents", $htmakelog );
 
 //
 // Make Install
@@ -307,13 +307,13 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $htcmd, $where, $htinstlog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "make install. Vea el contenido del log", $htinstlog );
+		diegracefully( $rv, "make install. See log contents", $htinstlog );
 
 //
-// Obtener version actual de php
+// Obtain current php version
 //
 
-	echo "{$myself}: obteniendo version de php.\n";
+	echo "{$myself}: obtaining current php version.\n";
 
 	$source = "http://php.net/releases/feed.php";
 	$phfeed = getwebcontents( $source );
@@ -324,14 +324,14 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 		preg_split( "/\n/", 
 		strip_tags( $phfeed, "<title></title>" ), -1, PREG_SPLIT_NO_EMPTY ) 
 		) ) ), -1, PREG_SPLIT_NO_EMPTY ) )
-		or gracefully( $myself, 1, "no se puede obtener la version", $source );
+		or gracefully( $myself, 1, "cannot obtain php version", $source );
 
 //
-// Obtener tar.gz de php, esta vez usando http. 
-// Ajustar tamano de bloque en caso de memoria escasa.
+// Obtain php tar.gz, this time using http. 
+// Adjust block size in case of lack of RAM.
 //
 
-	echo "{$myself}: descargando php {$version}.\n";
+	echo "{$myself}: downloading php {$version}.\n";
 
 	$phserver = "es1.php.net";
 	$phpref   = "get";
@@ -346,7 +346,7 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 
 	if( MYDEBUG && file_exists( $phlocal ) )
 	{
-		echo "* DEBUG: Ya existe el tar.gz de la version '{$version}' de php.\n";
+		echo "* DEBUG: A tar.gz of php version '{$version}' already exists.\n";
 	}
 	else
 	{
@@ -367,10 +367,10 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	}	
 
 //
-// Verificar la descarga
+// Verify download
 //
 
-	echo "{$myself}: verificando php {$version}.\n";
+	echo "{$myself}: verifying php {$version}.\n";
 
 	$phdata = preg_split( "/\n/", $phfeed, -1, PREG_SPLIT_NO_EMPTY );
 	$found = FALSE;
@@ -396,19 +396,19 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	}
 
 	$md5local = md5_file( $phlocal );
-	echo "{$myself}: php, suma remota '{$md5remote}', suma local '{$md5local}'.\n";
+	echo "{$myself}: php, remote sum '{$md5remote}', local sum '{$md5local}'.\n";
 
 	if( $md5remote != $md5local ) 
-		diegracefully( 1, "sumas de verificacion", $phlocal . " <> " . $phremote );
+		diegracefully( 1, "verification sums", $phlocal . " <> " . $phremote );
 
 //
-// Descomprimir
+// Uncompress
 //
 
-	echo "{$myself}: descomprimiendo {$phlocal} en {$phdest}.\n";
+	echo "{$myself}: uncompressing {$phlocal} to {$phdest}.\n";
 
 	if( ! unpacklibrary( $phlocal, $phdest ) )
-		diegracefully( 1, "descompresion", $phlocal );
+		diegracefully( 1, "uncompression", $phlocal );
 
 //
 // Configure
@@ -422,7 +422,7 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $phcmd, $where, $phconflog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "configure. Vea el contenido del log", $phconflog );
+		diegracefully( $rv, "configure. See log contents", $phconflog );
 
 //
 // Make
@@ -434,7 +434,7 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $phcmd, $where, $phmakelog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "make. Vea el contenido del log", $phmakelog );
+		diegracefully( $rv, "make. See log contents", $phmakelog );
 
 //
 // Make Install
@@ -446,10 +446,10 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( $phcmd, $where, $phinstlog );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "make install. Vea el contenido del log", $phinstlog );
+		diegracefully( $rv, "make install. See log contents", $phinstlog );
 
 //
-// Cambiar propietario de httpd.conf por un momento
+// Change httpd.conf owner for a while
 //
 
 	$conffile  = "/opt/apache/conf/httpd.conf";
@@ -458,10 +458,10 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 	$rv = runshellcmd( "sudo chown {$username} {$conffile}", ".", $chown1log );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "chown ha fallado. Vea el contenido del log", $chownlog );
+		diegracefully( $rv, "chown failed. See log contents", $chownlog );
 
 //
-// Handler para scripts .php en httpd.conf
+// Handler for php scripts in httpd.conf
 //
 
 	$conftext = array( 
@@ -476,20 +476,20 @@ function runshellcmd( $shellcmd, $workdir, $logfile )
 		diegracefully( $rv, "append SetHandler", $conffile );
 
 //
-// Dejar como estaba el propietario de httpd.conf
+// Restore httpd.conf previous owner
 //
 
 	$chown2log = "chown2.log.txt";
 	$rv = runshellcmd( "sudo chown root {$conffile}", ".", $chown2log );
 
 	if( $rv != "0" )
-		diegracefully( $rv, "chown ha fallado. Vea el contenido del log", $chownlog );
+		diegracefully( $rv, "chown failed. See log contents", $chownlog );
 
 //
-// Terminacion normal
+// Normal termination
 //
 
 	$dtterm = date( "r" );
-	echo "{$myself}: terminado {$dtterm}.\n";
+	echo "{$myself}: ended {$dtterm}.\n";
 	return( "0" );
 ?>
